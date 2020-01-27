@@ -1,0 +1,12 @@
+#!/bin/sh
+set -e
+
+FW_ROOT=$(readlink -f $(dirname $0)/..)
+
+while true
+do
+    $FW_ROOT/df/flash-lfs
+    nodemcu-tool terminal
+    echo x
+done
+

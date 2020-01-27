@@ -46,7 +46,7 @@
 // LUA_FLASH_STORE defines the default partition size if the NodeMCU partition
 // tool is not used.
 
-//#define LUA_FLASH_STORE                   0x10000
+#define LUA_FLASH_STORE                   0x20000
 
 // By default Lua executes the file init.lua at start up.  The following
 // define allows you to replace this with an alternative startup.  Warning:
@@ -55,7 +55,7 @@
 // The example provided executes the LFS module "_init" at startup or fails
 // through to the interactive prompt.
 
-//#define LUA_INIT_STRING "pcall(function() node.flashindex'_init'() end)"
+#define LUA_INIT_STRING "pcall(function() node.flashindex'df-core-init'() end)"
 
 
 // NodeMCU supports two file systems: SPIFFS and FATFS, the first is available
@@ -156,7 +156,7 @@
 // If you use the enduser_setup module, then you can also set the default
 // SSID when this module is running in AP mode.
 
-#define ENDUSER_SETUP_AP_SSID "SetupGadget"
+#define ENDUSER_SETUP_AP_SSID "DEVICE.FARM"
 
 
 // I2C software driver partially supports use of GPIO16 (D0) pin for SCL line.

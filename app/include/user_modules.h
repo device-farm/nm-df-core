@@ -7,7 +7,7 @@
 // includes general purpose interface modules which require at most two GPIO pins.
 // See https://github.com/nodemcu/nodemcu-firmware/pull/1127 for discussions.
 // New modules should be disabled by default and added in alphabetical order.
-#define LUA_USE_MODULES_ADC
+//#define LUA_USE_MODULES_ADC
 //#define LUA_USE_MODULES_ADS1115
 //#define LUA_USE_MODULES_ADXL345
 //#define LUA_USE_MODULES_AM2320
@@ -21,9 +21,9 @@
 //#define LUA_USE_MODULES_COLOR_UTILS
 //#define LUA_USE_MODULES_CRON
 //#define LUA_USE_MODULES_CRYPTO
-#define LUA_USE_MODULES_DHT
+//#define LUA_USE_MODULES_DHT
 //#define LUA_USE_MODULES_ENCODER
-//#define LUA_USE_MODULES_ENDUSER_SETUP // USE_DNS in dhcpserver.h needs to be enabled for this module to work.
+#define LUA_USE_MODULES_ENDUSER_SETUP // USE_DNS in dhcpserver.h needs to be enabled for this module to work.
 #define LUA_USE_MODULES_FILE
 //#define LUA_USE_MODULES_GDBSTUB
 #define LUA_USE_MODULES_GPIO
@@ -39,7 +39,7 @@
 #define LUA_USE_MODULES_MQTT
 #define LUA_USE_MODULES_NET
 #define LUA_USE_MODULES_NODE
-#define LUA_USE_MODULES_OW
+//#define LUA_USE_MODULES_OW
 //#define LUA_USE_MODULES_PCM
 //#define LUA_USE_MODULES_PERF
 //#define LUA_USE_MODULES_PIPE

@@ -1,0 +1,7 @@
+#!/bin/sh
+set -e
+
+FW_ROOT=$(readlink -f $(dirname $0)/..)
+
+$FW_ROOT/luac.cross -f -o $FW_ROOT/bin/lfs.bin *.lua
+$FW_ROOT/tools/nodemcu-partition.py -lf $FW_ROOT/bin/lfs.bin

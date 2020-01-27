@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+
+FW_ROOT=$(readlink -f $(dirname $0)/..)
+
+make -C $FW_ROOT
+make -C $FW_ROOT flash4m
+
+$FW_ROOT/df/flash-lfs
+
+echo "Full flash done."
