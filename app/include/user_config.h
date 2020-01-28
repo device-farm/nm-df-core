@@ -126,7 +126,7 @@
 // further details, as the scope of these changes is not obvious.
 
 //  Enable the wifi.startsmart() and wifi.stopsmart()
-//#define WIFI_SMART_ENABLE
+#define WIFI_SMART_ENABLE
 
 //  Enable wifi.sta.config() event callbacks
 #define WIFI_SDK_EVENT_MONITOR_ENABLE
@@ -156,7 +156,7 @@
 // If you use the enduser_setup module, then you can also set the default
 // SSID when this module is running in AP mode.
 
-#define ENDUSER_SETUP_AP_SSID "DEVICE.FARM"
+#define ENDUSER_SETUP_AP_SSID "SetupGadget"
 
 
 // I2C software driver partially supports use of GPIO16 (D0) pin for SCL line.
