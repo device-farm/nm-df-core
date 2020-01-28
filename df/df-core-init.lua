@@ -12,10 +12,16 @@ local WIFI_STATUS = {
 function init()
 
     local smartConfigStarted = false
+    local lastWifiStatus = wifi.STA_IDLE
 
     function checkWifi()
         local status = wifi.sta.status()
-        print("WiFi status: " .. WIFI_STATUS[status])
+
+        if status ~= lastWifiStatus then
+            print("WiFi status: " .. WIFI_STATUS[lastWifiStatus] .. " -> " ..
+                      WIFI_STATUS[status])
+            lastWifiStatus = status
+        end
 
         if status == wifi.STA_CONNECTING or status == wifi.STA_GOTIP then
             if smartConfigStarted then
