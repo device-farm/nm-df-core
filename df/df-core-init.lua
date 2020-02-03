@@ -1,5 +1,3 @@
-print("LFS !")
-
 local WIFI_STATUS = {
     [wifi.STA_IDLE] = "idle",
     [wifi.STA_CONNECTING] = "connecting",
@@ -11,8 +9,15 @@ local WIFI_STATUS = {
 
 function init()
 
+    board = sjson.decode([[
+        {
+            "ledPin": 4
+        }
+    ]])
+
     local smartConfigStarted = false
     local lastWifiStatus = wifi.STA_IDLE
+    local blinkTimer
 
     function checkWifi()
         local status = wifi.sta.status()
@@ -23,38 +28,37 @@ function init()
             lastWifiStatus = status
         end
 
-        if status == wifi.STA_CONNECTING or status == wifi.STA_GOTIP then
-            if smartConfigStarted then
-                print("Stopping SmartConfig")
-                wifi.stopsmart()
-                smartConfigStarted = false;
-            end
-        else
-            if not smartConfigStarted then
-                print("Starting SmartConfig")
-                wifi.startsmart()
-                smartConfigStarted = true;
-            end
+        if status == wifi.STA_GOTIP and smartConfigStarted then
+            print("Stopping SmartConfig")
+            wifi.stopsmart()
+            smartConfigStarted = false;
+            blinkTimer:unregister()
+            blinkTimer = nil
+            gpio.write(board.ledPin, gpio.HIGH)
+        end
+
+        if status ~= wifi.STA_CONNECTING and status ~= wifi.STA_GOTIP and
+            not smartConfigStarted then
+            print("Starting SmartConfig")
+            wifi.startsmart()
+            smartConfigStarted = true;
+            blinkTimer = tmr.create()
+            blinkTimer:alarm(100, tmr.ALARM_AUTO, function(t)
+                gpio.write(board.ledPin, gpio.read(board.ledPin) == 1 and 0 or 1)
+            end)
         end
     end
 
     wifi.setmode(wifi.STATION)
+
+    gpio.write(board.ledPin, gpio.HIGH)
+    gpio.mode(board.ledPin, gpio.OUTPUT)
 
     tmr.create():alarm(5000, tmr.ALARM_AUTO, function(t) checkWifi(); end)
 
     checkWifi()
 
     print("Core initialized.")
-
-    -- board = sjson.decode([[
-    --     {
-    --         "ledPin": 4
-    --     }
-    -- ]])
-
-    -- gpio.mode(board.ledPin, gpio.OUTPUT)
-    -- gpio.write(board.ledPin, gpio.LOW)
-    -- print("Tak co?"..board.ledPin)
 end
 
 local status, err = pcall(init)
