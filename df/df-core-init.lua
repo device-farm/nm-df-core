@@ -9,15 +9,35 @@ local WIFI_STATUS = {
 
 function init()
 
-    board = sjson.decode([[
-        {
-            "ledPin": 4
-        }
-    ]])
+    local boardFunction = node.flashindex("board")
+    if type(boardFunction) ~= "function" then error("No board module found") end
+
+    board = boardFunction()
 
     local smartConfigStarted = false
     local lastWifiStatus = wifi.STA_IDLE
+    local ledState = false
     local blinkTimer
+
+    function startSmartConfig()
+        if not smartConfigStarted then
+            print("Starting WiFi SmartConfig")
+            wifi.startsmart(function() smartConfigStarted = false end)
+            smartConfigStarted = true
+        end
+    end
+
+    function setLed(state)
+        ledState = state
+
+        if (state) then
+            gpio.write(board.ledPin, gpio.LOW)
+            gpio.mode(board.ledPin, gpio.OUTPUT)
+        else
+            gpio.mode(board.ledPin, gpio.INT, gpio.PULLUP)
+            gpio.trig(board.ledPin, "up", startSmartConfig)
+        end
+    end
 
     function checkWifi()
         local status = wifi.sta.status()
@@ -28,37 +48,36 @@ function init()
             lastWifiStatus = status
         end
 
-        if status == wifi.STA_GOTIP and smartConfigStarted then
-            print("Stopping SmartConfig")
-            wifi.stopsmart()
-            smartConfigStarted = false;
+        if status == wifi.STA_GOTIP and blinkTimer then
             blinkTimer:unregister()
             blinkTimer = nil
-            gpio.write(board.ledPin, gpio.HIGH)
+            setLed(false)
         end
 
-        if status ~= wifi.STA_CONNECTING and status ~= wifi.STA_GOTIP and
-            not smartConfigStarted then
-            print("Starting SmartConfig")
-            wifi.startsmart()
-            smartConfigStarted = true;
+        if status ~= wifi.STA_GOTIP and not blinkTimer then
             blinkTimer = tmr.create()
-            blinkTimer:alarm(100, tmr.ALARM_AUTO, function(t)
-                gpio.write(board.ledPin, gpio.read(board.ledPin) == 1 and 0 or 1)
-            end)
+            blinkTimer:alarm(smartConfigStarted and 500 or 100, tmr.ALARM_AUTO,
+                             function(t) setLed(not ledState) end)
         end
     end
 
-    wifi.setmode(wifi.STATION)
+    setLed(false)
 
-    gpio.write(board.ledPin, gpio.HIGH)
-    gpio.mode(board.ledPin, gpio.OUTPUT)
+    wifi.setmode(wifi.STATION)
 
     tmr.create():alarm(5000, tmr.ALARM_AUTO, function(t) checkWifi(); end)
 
     checkWifi()
 
     print("Core initialized.")
+
+    local application = node.flashindex("application")
+    if type(application) ~= "function" then
+        error("No application module found")
+    end
+
+    application()
+
 end
 
 local status, err = pcall(init)
