@@ -65,7 +65,7 @@ function init()
 
     wifi.setmode(wifi.STATION)
 
-    tmr.create():alarm(5000, tmr.ALARM_AUTO, function(t) checkWifi(); end)
+    tmr.create():alarm(2000, tmr.ALARM_AUTO, function(t) checkWifi(); end)
 
     checkWifi()
 
