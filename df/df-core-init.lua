@@ -18,14 +18,20 @@ function init()
 
     local smartConfigStarted = false
     local lastWifiStatus = wifi.STA_IDLE
+
     local ledState = false
     local blinkTimer
+    local blinkPeriod = 0
 
     function startSmartConfig()
         if not smartConfigStarted then
             print("Starting WiFi SmartConfig")
-            wifi.startsmart(function() smartConfigStarted = false end)
             smartConfigStarted = true
+            updateBlink()
+            wifi.startsmart(function() 
+                smartConfigStarted = false 
+                updateBlink()
+            end)
         end
     end
 
@@ -43,6 +49,29 @@ function init()
         end
     end
 
+    function blink(period)        
+        if (period ~= blinkPeriod) then
+
+            blinkPeriod = period
+
+            if blinkTimer then
+                blinkTimer:unregister()
+                blinkTimer = nil
+                setLed(false)
+            end
+            if period > 0 then
+                blinkTimer = tmr.create()
+                blinkTimer:alarm(period, tmr.ALARM_AUTO,
+                                 function(t) setLed(not ledState) end)
+            end
+        end
+    end
+
+    function updateBlink()
+        local status = wifi.sta.status()
+        blink(smartConfigStarted and 500 or (status == wifi.STA_GOTIP and 0 or 100))
+    end
+
     function checkWifi()
         local status = wifi.sta.status()
 
@@ -52,17 +81,7 @@ function init()
             lastWifiStatus = status
         end
 
-        if status == wifi.STA_GOTIP and blinkTimer then
-            blinkTimer:unregister()
-            blinkTimer = nil
-            setLed(false)
-        end
-
-        if status ~= wifi.STA_GOTIP and not blinkTimer then
-            blinkTimer = tmr.create()
-            blinkTimer:alarm(smartConfigStarted and 500 or 100, tmr.ALARM_AUTO,
-                             function(t) setLed(not ledState) end)
-        end
+        updateBlink();
     end
 
     setLed(false)
