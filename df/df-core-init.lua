@@ -9,10 +9,12 @@ local WIFI_STATUS = {
 
 function init()
 
+    df = {}
+
     local boardFunction = node.flashindex("board")
     if type(boardFunction) ~= "function" then error("No board module found") end
 
-    board = boardFunction()
+    df.board = boardFunction()
 
     local smartConfigStarted = false
     local lastWifiStatus = wifi.STA_IDLE
@@ -31,11 +33,11 @@ function init()
         ledState = state
 
         if (state) then
-            gpio.write(board.ledPin, gpio.LOW)
-            gpio.mode(board.ledPin, gpio.OUTPUT)
+            gpio.write(df.board.ledPin, gpio.LOW)
+            gpio.mode(df.board.ledPin, gpio.OUTPUT)
         else
-            gpio.mode(board.ledPin, gpio.INT, gpio.PULLUP)
-            gpio.trig(board.ledPin, "up", startSmartConfig)
+            gpio.mode(df.board.ledPin, gpio.INT, gpio.PULLUP)
+            gpio.trig(df.board.ledPin, "up", startSmartConfig)
         end
     end
 
@@ -65,7 +67,14 @@ function init()
 
     wifi.setmode(wifi.STATION)
 
-    tmr.create():alarm(2000, tmr.ALARM_AUTO, function(t) checkWifi(); end)
+    for _,e in pairs({
+        wifi.eventmon.STA_CONNECTED, wifi.eventmon.STA_DISCONNECTED,
+        wifi.eventmon.STA_AUTHMODE_CHANGE, wifi.eventmon.STA_GOT_IP,
+        wifi.eventmon.STA_DHCP_TIMEOUT, wifi.eventmon.AP_STACONNECTED,
+        wifi.eventmon.AP_STADISCONNECTED, wifi.eventmon.AP_PROBEREQRECVED
+    }) do 
+        wifi.eventmon.register(e, checkWifi) 
+    end
 
     checkWifi()
 
