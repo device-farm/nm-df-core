@@ -30,14 +30,16 @@ function init()
     end
 
     function setLed(state)
-        ledState = state
+        if (df.board.ledPin) then
+            ledState = state
 
-        if (state) then
-            gpio.write(df.board.ledPin, gpio.LOW)
-            gpio.mode(df.board.ledPin, gpio.OUTPUT)
-        else
-            gpio.mode(df.board.ledPin, gpio.INT, gpio.PULLUP)
-            gpio.trig(df.board.ledPin, "up", startSmartConfig)
+            if (state) then
+                gpio.write(df.board.ledPin, gpio.LOW)
+                gpio.mode(df.board.ledPin, gpio.OUTPUT)
+            else
+                gpio.mode(df.board.ledPin, gpio.INT, gpio.PULLUP)
+                gpio.trig(df.board.ledPin, "up", startSmartConfig)
+            end
         end
     end
 
@@ -67,14 +69,12 @@ function init()
 
     wifi.setmode(wifi.STATION)
 
-    for _,e in pairs({
+    for _, e in pairs({
         wifi.eventmon.STA_CONNECTED, wifi.eventmon.STA_DISCONNECTED,
         wifi.eventmon.STA_AUTHMODE_CHANGE, wifi.eventmon.STA_GOT_IP,
         wifi.eventmon.STA_DHCP_TIMEOUT, wifi.eventmon.AP_STACONNECTED,
         wifi.eventmon.AP_STADISCONNECTED, wifi.eventmon.AP_PROBEREQRECVED
-    }) do 
-        wifi.eventmon.register(e, checkWifi) 
-    end
+    }) do wifi.eventmon.register(e, checkWifi) end
 
     checkWifi()
 
