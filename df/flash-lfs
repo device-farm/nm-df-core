@@ -1,7 +1,20 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
 FW_ROOT=$(readlink -f $(dirname $0)/..)
 
-$FW_ROOT/luac.cross -f -o $FW_ROOT/bin/lfs.bin $FW_ROOT/df/*.lua *.lua
+function findSources {
+    find $1 -name '*.lua'
+}
+
+CONFIG_LUA=$FW_ROOT/bin/generated-config.lua
+
+echo "return {" >$CONFIG_LUA
+find . -name "*.config" -exec cat '{}' + | sed "s/ *= */ = function() return /;s/^/  /;s/\$/; end,/" >>$CONFIG_LUA
+echo "}" >>$CONFIG_LUA
+
+cat $CONFIG_LUA
+
+$FW_ROOT/luac.cross -f -o $FW_ROOT/bin/lfs.bin $(findSources $FW_ROOT/df) $(findSources .) $CONFIG_LUA
 $FW_ROOT/tools/nodemcu-partition.py -lf $FW_ROOT/bin/lfs.bin
+

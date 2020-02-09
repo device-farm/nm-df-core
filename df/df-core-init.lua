@@ -9,12 +9,14 @@ local WIFI_STATUS = {
 
 function init()
 
-    df = {}
+    local configFunction = node.flashindex("generated-config")
+    if type(configFunction) ~= "function" then error("No generated config module found") end
 
-    local boardFunction = node.flashindex("board")
-    if type(boardFunction) ~= "function" then error("No board module found") end
+    df = {
+        config = configFunction()
+    }
 
-    df.board = boardFunction()
+    local wifiLedPin = df.config.wifiLedPin();
 
     local smartConfigStarted = false
     local lastWifiStatus = wifi.STA_IDLE
@@ -36,15 +38,15 @@ function init()
     end
 
     function setLed(state)
-        if (df.board.ledPin) then
+        if (wifiLedPin) then
             ledState = state
 
             if (state) then
-                gpio.write(df.board.ledPin, gpio.LOW)
-                gpio.mode(df.board.ledPin, gpio.OUTPUT)
+                gpio.write(wifiLedPin, gpio.LOW)
+                gpio.mode(wifiLedPin, gpio.OUTPUT)
             else
-                gpio.mode(df.board.ledPin, gpio.INT, gpio.PULLUP)
-                gpio.trig(df.board.ledPin, "up", startSmartConfig)
+                gpio.mode(wifiLedPin, gpio.INT, gpio.PULLUP)
+                gpio.trig(wifiLedPin, "up", startSmartConfig)
             end
         end
     end
