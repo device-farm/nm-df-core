@@ -56,7 +56,7 @@ typedef struct CallInfo {
 
 
 
-#define curr_func(L)	(ttisfunction(L->ci->func) ? clvalue(L->ci->func) : NULL)
+#define curr_func(L)	(ttisclfunction(L->ci->func) ? clvalue(L->ci->func) : NULL)
 #define ci_func(ci)	(ttisfunction((ci)->func) ? clvalue((ci)->func) : NULL)
 #define f_isLua(ci)	(!ttislightfunction((ci)->func) && !ci_func(ci)->c.isC)
 #define isLua(ci)	(ttisfunction((ci)->func) && f_isLua(ci))
@@ -98,6 +98,7 @@ typedef struct global_State {
   stringtable ROstrt;  /* Flash-based hash table for RO strings */
   Proto *ROpvmain;   /* Flash-based Proto main */
   int LFSsize;  /* Size of Lua Flash Store */
+  int error_reporter; /* Registry Index of error reporter task */
 #endif
 } global_State;
 
@@ -159,7 +160,7 @@ union GCObject {
 #define rawgco2u(o)	check_exp((o)->gch.tt == LUA_TUSERDATA, &((o)->u))
 #define gco2u(o)	(&rawgco2u(o)->uv)
 #define gco2cl(o)	check_exp((o)->gch.tt == LUA_TFUNCTION, &((o)->cl))
-#define gco2h(o)	check_exp((o)->gch.tt == LUA_TTABLE, &((o)->h))
+#define gco2h(o)	check_exp(((o)->gch.tt & LUA_TMASK) == LUA_TTABLE, &((o)->h))
 #define gco2p(o)	check_exp((o)->gch.tt == LUA_TPROTO, &((o)->p))
 #define gco2uv(o)	check_exp((o)->gch.tt == LUA_TUPVAL, &((o)->uv))
 #define ngcotouv(o) \

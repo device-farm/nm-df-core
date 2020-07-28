@@ -1,7 +1,9 @@
 #include "module.h"
 #include "lauxlib.h"
 #include "platform.h"
+#include "user_interface.h"
 #include "rom.h"
+
 //#include "driver/easygpio.h"
 //static Ping_Data pingA;
 #define defPulseLen 185
@@ -31,6 +33,10 @@ static int ICACHE_FLASH_ATTR rc_send(lua_State* L) {
   NODE_ERR("Protocol:%d\n",Protocol);
   NODE_ERR("repeat:%d\n",repeat);
   NODE_ERR("send:");
+
+  platform_print_deprecation_note("rc",
+    "in the next release. Use rfswitch module instead.");
+  
   int c,k,nRepeat;
   bits = bits-1;
   for (c = bits; c >= 0; c--)
@@ -81,9 +87,9 @@ static int ICACHE_FLASH_ATTR rc_send(lua_State* L) {
 }
 
 // Module function map
-LROT_BEGIN(rc)
+LROT_BEGIN(rc, NULL, 0)
   LROT_FUNCENTRY( send, rc_send )
-LROT_END( rc, NULL, 0 )
+LROT_END(rc, NULL, 0)
 
 
 int luaopen_rc(lua_State *L) {

@@ -7,7 +7,6 @@
 
 #define lstate_c
 #define LUA_CORE
-#define LUAC_CROSS_FILE
 
 #include "lua.h"
 
@@ -197,11 +196,12 @@ LUA_API lua_State *lua_newstate (lua_Alloc f, void *ud) {
   g->memlimit = 0;
 #endif
 #ifndef LUA_CROSS_COMPILER
-  g->ROstrt.size = 0;
-  g->ROstrt.nuse = 0;
-  g->ROstrt.hash = NULL;
-  g->ROpvmain    = NULL;
-  g->LFSsize     = 0;
+  g->ROstrt.size    = 0;
+  g->ROstrt.nuse    = 0;
+  g->ROstrt.hash    = NULL;
+  g->ROpvmain       = NULL;
+  g->LFSsize        = 0;
+  g->error_reporter = 0;
 #endif
   for (i=0; i<NUM_TAGS; i++) g->mt[i] = NULL;
   if (luaD_rawrunprotected(L, f_luaopen, NULL) != 0) {
@@ -229,9 +229,6 @@ lua_State *lua_open(void) {
   return lua_crtstate;
 }
 
-lua_State *lua_getstate(void) {
-  return lua_crtstate;
-}
 LUA_API void lua_close (lua_State *L) {
 #ifndef LUA_CROSS_COMPILER
   lua_sethook( L, NULL, 0, 0 );

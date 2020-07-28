@@ -142,6 +142,13 @@ static int tmr_now(lua_State* L){
 	return 1;
 }
 
+// Lua: tmr.ccount() , returns CCOUNT register
+static int tmr_ccount( lua_State* L )
+{
+	lua_pushinteger(L, CCOUNT_REG);
+	return 1;
+}
+
 static tmr_t tmr_get( lua_State *L, int stack ) {
 	tmr_t t = (tmr_t)luaL_checkudata(L, stack, "tmr.timer");
 	if (t == NULL)
@@ -158,7 +165,7 @@ static int tmr_register(lua_State* L){
 
 	luaL_argcheck(L, (interval > 0 && interval <= MAX_TIMEOUT), 2, MAX_TIMEOUT_ERR_STR);
 	luaL_argcheck(L, (mode == TIMER_MODE_SINGLE || mode == TIMER_MODE_SEMI || mode == TIMER_MODE_AUTO), 3, "Invalid mode");
-	luaL_argcheck(L, (lua_type(L, 4) == LUA_TFUNCTION || lua_type(L, 4) == LUA_TLIGHTFUNCTION), 4, "Must be function");
+	luaL_argcheck(L, lua_isfunction(L, 4), 4, "Must be function");
 	//get the lua function reference
 	lua_pushvalue(L, 4);
 	sint32_t ref = luaL_ref(L, LUA_REGISTRYINDEX);
@@ -369,7 +376,9 @@ static int tmr_create( lua_State *L ) {
 
 // Module function map
 
-LROT_BEGIN(tmr_dyn)
+LROT_BEGIN(tmr_dyn, NULL, LROT_MASK_GC_INDEX)
+  LROT_FUNCENTRY( __gc, tmr_unregister )
+  LROT_TABENTRY(  __index, tmr_dyn )
   LROT_FUNCENTRY( register, tmr_register )
   LROT_FUNCENTRY( alarm, tmr_alarm )
   LROT_FUNCENTRY( start, tmr_start )
@@ -381,17 +390,16 @@ LROT_BEGIN(tmr_dyn)
   LROT_FUNCENTRY( suspend, tmr_suspend )
   LROT_FUNCENTRY( resume, tmr_resume )
 #endif
-  LROT_FUNCENTRY( __gc, tmr_unregister )
-  LROT_TABENTRY( __index, tmr_dyn )
-LROT_END( tmr_dyn, tmr_dyn, LROT_MASK_GC_INDEX )
+LROT_END(tmr_dyn, NULL, LROT_MASK_GC_INDEX)
 
 
-LROT_BEGIN(tmr)
+LROT_BEGIN(tmr, NULL, 0)
   LROT_FUNCENTRY( delay, tmr_delay )
   LROT_FUNCENTRY( now, tmr_now )
   LROT_FUNCENTRY( wdclr, tmr_wdclr )
   LROT_FUNCENTRY( softwd, tmr_softwd )
   LROT_FUNCENTRY( time, tmr_time )
+  LROT_FUNCENTRY( ccount, tmr_ccount )
 #ifdef TIMER_SUSPEND_ENABLE
   LROT_FUNCENTRY( suspend_all, tmr_suspend_all )
   LROT_FUNCENTRY( resume_all, tmr_resume_all )
@@ -400,7 +408,7 @@ LROT_BEGIN(tmr)
   LROT_NUMENTRY( ALARM_SINGLE, TIMER_MODE_SINGLE )
   LROT_NUMENTRY( ALARM_SEMI, TIMER_MODE_SEMI )
   LROT_NUMENTRY( ALARM_AUTO, TIMER_MODE_AUTO )
-LROT_END( tmr, NULL, 0 )
+LROT_END(tmr, NULL, 0)
 
 
 #include "pm/swtimer.h"
